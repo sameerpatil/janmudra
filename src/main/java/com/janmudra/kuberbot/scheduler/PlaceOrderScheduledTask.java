@@ -6,7 +6,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +19,7 @@ import com.binance.api.client.domain.account.Order;
 import com.binance.api.client.domain.account.request.OrderRequest;
 import com.binance.api.client.domain.market.OrderBook;
 import com.binance.api.client.domain.market.OrderBookEntry;
+import com.janmudra.kuberbot.utils.OrderCalculatorUtil;
 
 @Component
 public class PlaceOrderScheduledTask {
@@ -28,7 +28,8 @@ public class PlaceOrderScheduledTask {
 	private BinanceApiRestClient client;
 	
 //	private String symbol = "XLMETH";
-	private String symbol = "NEOUSDT";
+	private String symbol = "NEOBTC";
+	private String profitPercent = "1";
 	private static final Logger log = LoggerFactory.getLogger(PlaceOrderScheduledTask.class);
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
@@ -50,6 +51,9 @@ public class PlaceOrderScheduledTask {
     	}
     }
 
+    /**
+     * Places a new order for the dedicate pair of MARKET type. Followed by gives call to coverOrder
+     */
 	private void placeNewOrder() {
 		OrderBook orderBook = client.getOrderBook(symbol, 10);
 		List<OrderBookEntry> asks = orderBook.getAsks();
@@ -57,12 +61,52 @@ public class PlaceOrderScheduledTask {
 		OrderBookEntry firstAskEntry = asks.get(0);
 		OrderBookEntry firstBidEntry = bids.get(0);
 		
-		String quantity = calculateQuantity(firstAskEntry);//Need to work on this <-
-		NewOrder order = new NewOrder(symbol, OrderSide.SELL, OrderType.LIMIT, TimeInForce.GTC, quantity,firstAskEntry.getPrice());
+		String quantity = calculateQuantity(firstAskEntry);//<- Need to work on this
+		/** 
+		 * Important in the below line the orderType is set to MARKET 
+		 * because we want to execute the order immediately so it would be easy to calculate and 
+		 * place the cover order immediately.
+		 * We cannot change it to LIMIT type order because we don't have a mechanism yet to
+		 * poll and check if the order got executed or not without which we cannot place the cover
+		 * order...!!!
+		**/
+		NewOrder order = new NewOrder(symbol, OrderSide.SELL, OrderType.MARKET, TimeInForce.GTC, quantity,firstAskEntry.getPrice());
 		NewOrderResponse newOrderResponse = client.newOrder(order);
-		log.info("** Placed Order = " + order.toString());
-			System.out.println("** Placed Order = " + order.toString());
-			System.out.println("*********** NOW SLEEPING *****************");
+		log.info("Placed Order = " + order.toString());
+		log.info("Order Response = " + newOrderResponse.getOrderId());
+		System.out.println("** Placed Order = " + order.toString());
+		log.info("Now calculating and placing the cover-order");
+		placeCoverOrderForThisOrder(order);
+	}
+
+	/**
+	 * This method looks at the order passed in the parameter and place the cover order for that
+	 * If the passed order is of type OrderSide.SELL then the new order is of OrderSide.BUY of
+	 * same pair type and passed configured percentage. 
+	 * Eg.1 For USD
+	 * Orig order is of 1 NEO sold @80 USD and profit percentage is configured to 1% then
+	 * the cover order would be 
+	 * BUY NEO of 80.01 @ 79.2 (Brokerage excluded for clarity) in the formula in code it includes
+	 * brokerage on both legs of the order.
+	 * 
+	 * Eg.2 For NEO/ETH
+	 * TODO complete the example
+	 * 
+	 * @param order
+	 */
+	private void placeCoverOrderForThisOrder(NewOrder order) {
+		OrderSide coverOrderSide = OrderSide.SELL;
+		
+		if(order.getSide().equals(OrderSide.SELL))
+			coverOrderSide = OrderSide.BUY;
+		
+		Double coverQuantity = OrderCalculatorUtil.
+				getQuantityByPercentage(order.getQuantity(), profitPercent);
+		Double coverPrice = OrderCalculatorUtil.
+				getNewPriceWithBrokerage(order.getPrice(), profitPercent);
+		NewOrder coverOrder = new NewOrder(symbol, coverOrderSide, OrderType.LIMIT, 
+				TimeInForce.GTC, String.valueOf(coverQuantity),String.valueOf(coverPrice));
+	
 	}
 
 	private String calculateQuantity(OrderBookEntry firstBidEntry) {

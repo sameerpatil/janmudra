@@ -1,7 +1,5 @@
 package com.janmudra.kuberbot.domain;
 
-import com.janmudra.kuberbot.utils.Symbol;
-
 public class KuberOrder {
 
 	private String	symbol;

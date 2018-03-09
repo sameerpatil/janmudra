@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExchangeConfig {
 	
-	private static final Logger log = LoggerFactory.getLogger(ExchangeConfig.class);
 	@Value("${apikey}")
     private String apiKey;
 	

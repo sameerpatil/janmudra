@@ -19,12 +19,12 @@ public static void main(String[] args) {
 	System.out.println("Spread = " +spread.doubleValue());*/
 	//I am selling BTC at ask price... and i want to buy it back when the price drops by 1%... 
 	//Implement a method which will give the new buy value after adjusting the brokerage for Sell as well as the brokerage for buying
-	System.out.println(" percentage = " + getNewValueWithBrokerage(ask, "1"));
+	System.out.println(" percentage = " + getNewPriceWithBrokerage(ask, "1"));
 }
 
 
-public static Double getNewValueWithBrokerage(String value, String percentageDiff) {
-	Double orig = Double.parseDouble(value);
+public static Double getNewPriceWithBrokerage(String price, String percentageDiff) {
+	Double orig = Double.parseDouble(price);
 	Double percent = Double.parseDouble(percentageDiff);
 	double unknown = orig.doubleValue()*percent.doubleValue();
 	Double firstLegBrokerage = getBrokerage(orig);
@@ -55,4 +55,20 @@ private static Double getBrokerage(Double orig) {
 	double unknown = orig*(brokerage/100);
 	return unknown;
 }
+
+public static Double getQuantityByPercentage(String quantity, String percentageDiff) {
+	Double coverQuantity;
+	Double origQuantity = Double.parseDouble(quantity);
+	Double percent = Double.parseDouble(percentageDiff);
+	double unknown = origQuantity.doubleValue()*percent.doubleValue();
+//	Double firstLegBrokerage = getBrokerage(origQuantity);
+	Double differenceAmmount = unknown/100;
+	if(percent>0)
+		coverQuantity = origQuantity +differenceAmmount;
+	else
+		coverQuantity = origQuantity - differenceAmmount;
+	return coverQuantity;
 }
+}
+
+

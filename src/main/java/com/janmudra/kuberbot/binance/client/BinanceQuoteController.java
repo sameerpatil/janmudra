@@ -1,6 +1,5 @@
 package com.janmudra.kuberbot.binance.client;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
