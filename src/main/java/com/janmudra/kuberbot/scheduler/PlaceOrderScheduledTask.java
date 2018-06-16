@@ -163,6 +163,7 @@ public class PlaceOrderScheduledTask {
 		
 		Double coverQuantity = OrderCalculatorUtil.
 				getQuantityByPercentage(order.getQuantity(), profitPercent);
+		
 		Double coverPrice = OrderCalculatorUtil.
 				getNewPriceWithBrokerage(order.getPrice(), profitPercent);
 		NewOrder coverOrder = new NewOrder(symbol, coverOrderSide, OrderType.LIMIT, 
