@@ -10,18 +10,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.janmudra.kuberbot.scheduler.PlaceOrderScheduledTask;
 
 @RestController
-public class BinanceGreetingController {
+public class TradeController {
 
-    private static final String template = "Hello, %s!";
     private final AtomicLong counter = new AtomicLong();
 
     @Autowired 
     PlaceOrderScheduledTask placeOrder;
-    @RequestMapping("/greeting")
-    public String greeting(@RequestParam(value="name", defaultValue="short") String name) {
-    	String orderType = name;
+    @RequestMapping("/trade")
+    public String greeting(@RequestParam(value="tradeDirection", defaultValue="short") String tradeDirection) {
+    	String orderType = tradeDirection;
     	return placeOrder.executeEventBasedKuberOrder(orderType);
-    	//return new Greeting(counter.incrementAndGet(),
-         //                   String.format(template, name));
     }
 }

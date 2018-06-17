@@ -13,7 +13,7 @@ import com.binance.api.client.domain.market.OrderBookEntry;
 import com.binance.api.client.domain.market.TickerStatistics;
 
 @RestController
-public class BinanceQuoteController {
+public class JanMudraQuoteController {
 
 //	private RestTemplate restTemplate;
 

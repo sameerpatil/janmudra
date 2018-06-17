@@ -17,7 +17,7 @@ import com.janmudra.kuberbot.config.ExchangeConfig;
 @EnableScheduling
 public class KuberBotApplication {
 
-	private static final Logger log = LoggerFactory.getLogger(KuberBotApplication.class);
+	private static final Logger logger = LoggerFactory.getLogger(KuberBotApplication.class);
 	 @Autowired
 	 ExchangeConfig config;
 	public static void main(String[] args) {
@@ -31,7 +31,8 @@ public class KuberBotApplication {
 		BinanceApiRestClient restClient = factory.newRestClient();
 		restClient.ping();
 		long serverTime = restClient.getServerTime();
-		System.out.println(serverTime);
+		logger.info("The server time  = " + serverTime);
+		logger.info("##### The System is Up and Running!! #####");
 		System.out.println("##### The System is Up and Running!! #####");
 		return restClient;
 	}
